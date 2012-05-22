@@ -41,7 +41,7 @@
 }
 
 uses SysUtils, CastleUtils, GL, GLU, GLExt, CastleWindow, CastleInputs,
-  UComplex, Math, UIControls,
+  UComplex, Math, UIControls, CastleOpenDocument,
   CastleMessages, Images, FractalsUnit, CastleGLUtils,
   CastleStringUtils, GLImages;
 
@@ -192,6 +192,10 @@ begin
             PostRedrawFractal;
           end;
          end;
+    200: if not OpenURL('https://github.com/michaliskambi/fractals-demo-cge') then
+           Window.MessageOk(SCannotOpenURL, mtError);
+    210: if not OpenURL('http://castle-engine.sourceforge.net/') then
+           Window.MessageOk(SCannotOpenURL, mtError);
     else raise EInternalError.Create('not impl menu item');
   end;
 
@@ -224,6 +228,10 @@ begin
     M.Append(TMenuSeparator.Create);
     M.Append(TMenuItem.Create('Set iteration "z int power"',     180));
     Result.Append(M);
+ M := TMenu.Create('_Help');
+   M.Append(TMenuItem.Create('Visit our website (fractals-demo-cge)', 200));
+   M.Append(TMenuItem.Create('Visit Castle Game Engine website'     , 210));
+   Result.Append(M);
 end;
 
 { main ------------------------------------------------------------ }
