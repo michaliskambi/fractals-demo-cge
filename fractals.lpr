@@ -20,7 +20,7 @@
 
 uses SysUtils, CastleUtils, GL, GLU, GLExt, CastleWindow, CastleInputs,
   UComplex, Math,
-  CastleMessages, Images, FractalsUnit, KambiComplexUtils, CastleGLUtils,
+  CastleMessages, Images, FractalsUnit, CastleGLUtils,
   CastleStringUtils, GLImages;
 
 var

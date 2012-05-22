@@ -80,9 +80,14 @@ procedure DrawFractal_Image(Iteration: TComplexIterationFunction;
 procedure DrawFractal_ImageAndGL(Iteration: TComplexIterationFunction;
   const CMin, CMax: Complex; Image: TImage);
 
+function MakeComplex(ARe, AIm: Real): Complex;
+
+{ Absolute value of z squared }
+function CSqrAbs(const C: Complex): Real;
+
 implementation
 
-uses VectorMath, GL, Math, CastleUtils, KambiComplexUtils;
+uses VectorMath, GL, Math, CastleUtils;
 
 { Iterations ------------------------------------------------------------ }
 
@@ -223,6 +228,17 @@ begin
   DrawFractal(Iteration, CMin, CMax, 0, Image.Width-1, 0, Image.Height-1,
     @ImageAndGL_PixelDraw, Image);
   glEnd;
+end;
+
+function MakeComplex(ARe, AIm: Real): Complex;
+begin
+  Result.Re := ARe;
+  Result.Im := AIm;
+end;
+
+function CSqrAbs(const C: Complex): Real;
+begin
+  Result := C.Re*C.Re + C.Im*C.Im;
 end;
 
 end.
