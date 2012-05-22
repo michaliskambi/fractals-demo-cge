@@ -41,7 +41,7 @@
 }
 
 uses SysUtils, CastleUtils, GL, GLU, GLExt, CastleWindow, CastleInputs,
-  UComplex, Math,
+  UComplex, Math, UIControls,
   CastleMessages, Images, FractalsUnit, CastleGLUtils,
   CastleStringUtils, GLImages;
 
@@ -239,6 +239,7 @@ begin
 
     Window.DoubleBuffer := false;
     Window.OnResize := @Resize;
+    Window.OnDrawStyle := ds2D;
     Window.OnDraw := @Draw;
     Window.OnClose := @CloseGL;
     Window.OnMouseDown := @MouseDown;
