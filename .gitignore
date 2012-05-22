@@ -2,3 +2,5 @@
 *.o
 *.ppu
 fractals
+lib
+fractals.lps

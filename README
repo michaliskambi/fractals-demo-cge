@@ -3,10 +3,16 @@ Castle Game Engine [http://castle-engine.sourceforge.net/]
 utilities (TCastleWindow and other helpers).
 
 To compile: get Castle Game Engine source code from
-http://castle-engine.sourceforge.net/engine.php,
-unpack such that fractals-demo-cge and castle_game_engine directories
-are siblings, and compile using ./compile.sh. You will need FPC
-[http://www.freepascal.org/] to compile.
+http://castle-engine.sourceforge.net/engine.php, and
+
+1. Use command-line FPC: unpack Castle Game Engine source
+   such that fractals-demo-cge and castle_game_engine directories
+   are siblings, and compile using ./compile.sh. You will need FPC
+   [http://www.freepascal.org/] to compile.
+
+2. Use Lazarus: install also Lazarus [http://www.lazarus.freepascal.org/].
+   Compile in Lazarus packages in castle_game_engine/packages/.
+   Then open and compile in Lazarus fractals.lpi project file.
 
 --
 Michalis Kamburelis
