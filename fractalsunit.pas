@@ -8,24 +8,26 @@ const
   MinColorExponent = 1;
 
 var
-  { Always must be >= MinColorExponent.
-
-    ColorExponent determine how colors will be determined:
+  { How colors will be determined.
     Color:=(1-Iter/MaxIter)^ColorExponent.
     E.g. ColorExponent = 1 means that color is linearly computed based
-    on (1-Iter/MaxIter). }
+    on (1-Iter/MaxIter).
+
+    Always must be >= MinColorExponent. }
   ColorExponent: Cardinal = 1;
 
 type
   TPixelDrawFunction = procedure(X, Y: Integer; const Color: Single; Data: Pointer);
   TComplexIterationFunction = function(const Z, C: Complex): Complex;
 
-{ Returns Z*Z + C }
+{ Returns Z*Z + C. }
 function MandelbrotIteration(const Z, C: Complex): Complex;
 
 var
-  ZIntPower: Integer = 3; { must be >= 2 }
-{ generalized MandelbrotIteration, returns Z^ZIntPower + C }
+  { Configure ZIntPowerIteration job. Must be >= 2. }
+  ZIntPower: Integer = 3;
+
+{ Generalized MandelbrotIteration, returns Z^ZIntPower + C }
 function ZIntPowerIteration(const Z, C: Complex): Complex;
 
 { Returns sin(Z) + e^Z + C }
@@ -46,12 +48,16 @@ procedure DrawFractal(Iteration: TComplexIterationFunction;
 { DrawFractal with OpenGL.
 
   Points are drawn using
-    glColor3f(Color, Color, Color)
-    glVertex2i(x, y)
-  (so e.g. you can translate them using modelview matrix
+
+@longCode(#
+  glColor3f(Color, Color, Color)
+  glVertex2i(x, y)
+#)
+
+  So e.g. you can translate them using modelview matrix
   but when using scale you must be careful (because if you scale them
-  too large, you will see holes between adjacent points))
-  and whole call is enclosed in glBegin(GL_POINTS) ... glEnd. }
+  too large, you will see holes between adjacent points).
+  Whole call is enclosed in glBegin(GL_POINTS) ... glEnd. }
 procedure DrawFractal_GL(Iteration: TComplexIterationFunction;
   const CMin, CMax: Complex;
   XMin, XMax, YMin, YMax: Integer);
@@ -63,8 +69,12 @@ procedure DrawFractal_Image(Iteration: TComplexIterationFunction;
 
 { DrawFractal simultaneously in OpenGL and Image.
   So this is like
-    DrawFractal_Image(CMin, CMax, Image);
-    DrawFractal_GL(CMin, CMax, 0, Image.Width-1, 0, Image.Height-1)
+
+@longCode(#
+  DrawFractal_Image(CMin, CMax, Image);
+  DrawFractal_GL(CMin, CMax, 0, Image.Width-1, 0, Image.Height-1)
+#)
+
   but both draws are done simultaneously (i.e. only ONE call
   to base DrawFractal function is made). }
 procedure DrawFractal_ImageAndGL(Iteration: TComplexIterationFunction;
@@ -78,21 +88,22 @@ uses VectorMath, GL, Math, CastleUtils, KambiComplexUtils;
 
 function MandelbrotIteration(const Z, C: Complex): Complex;
 begin
- Result := Z * Z + C;
+  Result := Z * Z + C;
 end;
 
 function ZIntPowerIteration(const Z, C: Complex): Complex;
-var i: Integer;
+var
+  I: Integer;
 begin
- Result := Z;
- { TODO: of course, optimize below to log(ZIntPower) }
- for i := 0 to ZIntPower-2 do Result *= Z;
- Result += C;
+  Result := Z;
+  { TODO: of course, optimize below to log(ZIntPower) }
+  for i := 0 to ZIntPower-2 do Result *= Z;
+  Result += C;
 end;
 
 function BiomorphIteration(const Z, C: Complex): Complex;
 begin
- Result := csin(Z) + cexp(Z) + C;
+  Result := csin(Z) + cexp(Z) + C;
 end;
 
 { DrawFractal ------------------------------------------------------------ }
@@ -113,105 +124,105 @@ var
   C, Z: Complex;
   DoBreak: boolean;
 begin
- for X := XMin to XMax do
-  for Y := YMin to YMax do
-  begin
-   C.Re := MapRange(X, XMin, XMax, CMin.Re, CMax.Re);
-   C.Im := MapRange(Y, YMin, YMax, CMin.Im, CMax.Im);
+  for X := XMin to XMax do
+    for Y := YMin to YMax do
+    begin
+      C.Re := MapRange(X, XMin, XMax, CMin.Re, CMax.Re);
+      C.Im := MapRange(Y, YMin, YMax, CMin.Im, CMax.Im);
 
-   { start iteration }
-   Z := UComplex._0;
+      { start iteration }
+      Z := UComplex._0;
 
-   { It's better to use "while" than "for" here to be sure what's the value
-     of Iter after the loop. }
-   Iter := 0;
-   while Iter < MaxIter do
-   begin
-    try
-     { next iteration step }
-     Z := Iteration(Z, C);
-     DoBreak := CSqrAbs(Z) > SqrMaxZ;
+      { It's better to use "while" than "for" here to be sure what's the value
+        of Iter after the loop. }
+      Iter := 0;
+      while Iter < MaxIter do
+      begin
+        try
+          { next iteration step }
+          Z := Iteration(Z, C);
+          DoBreak := CSqrAbs(Z) > SqrMaxZ;
 
-     { Force raising pending exceptions after Iteration(Z, C)
-       and CSqrAbs(Z) }
-     ClearExceptions(true);
+          { Force raising pending exceptions after Iteration(Z, C)
+            and CSqrAbs(Z) }
+          ClearExceptions(true);
 
-     if DoBreak then Break;
-    except
-     { Any problems with calculating Iteration(Z, C) or CSqrAbs(Z) ?
-       Then assume that it means that Iteration(Z, C) == infinity
-       and Break. }
-     Break;
+          if DoBreak then Break;
+        except
+          { Any problems with calculating Iteration(Z, C) or CSqrAbs(Z) ?
+            Then assume that it means that Iteration(Z, C) == infinity
+            and Break. }
+          Break;
+        end;
+
+        Inc(Iter);
+      end;
+
+   {   Write('For ', X, ',', Y, ' we get Iter = ', Iter);
+      Write(' so color is ', (1 - Iter/MaxIter):1:10);
+      Write(' so color^exp is ', IntPower(1 - Iter/MaxIter, ColorExponent):1:10);
+      Writeln; }
+
+      { now Iter/MaxIter says "how fast Z approached infinity ?".
+        Small Iter/MaxIter means that Z appraches infinity fast.
+        Large Iter/MaxIter means that Z approaches infinity slow,
+        Iter/MaxIter = 1 (so Iter = MaxItem) means that
+        never CSqrAbs(Z) > SqrMaxZ, so we decide that Z stays bounded
+        (does not approach infinity) }
+      OnPixelDraw(X, Y, IntPower(1 - Iter/MaxIter, ColorExponent), OnPixelDrawData);
     end;
-
-    Inc(Iter);
-   end;
-
-{   Write('For ', X, ',', Y, ' we get Iter = ', Iter);
-   Write(' so color is ', (1 - Iter/MaxIter):1:10);
-   Write(' so color^exp is ', IntPower(1 - Iter/MaxIter, ColorExponent):1:10);
-   Writeln; }
-
-   { now Iter/MaxIter says "how fast Z approached infinity ?".
-     Small Iter/MaxIter means that Z appraches infinity fast.
-     Large Iter/MaxIter means that Z approaches infinity slow,
-     Iter/MaxIter = 1 (so Iter = MaxItem) means that
-     never CSqrAbs(Z) > SqrMaxZ, so we decide that Z stays bounded
-     (does not approach infinity) }
-   OnPixelDraw(X, Y, IntPower(1 - Iter/MaxIter, ColorExponent), OnPixelDrawData);
-  end;
 end;
 
 { DrawFractal_GL --------------------------------------------------- }
 
 procedure GL_PixelDraw(X, Y: Integer; const Color: Single; Data: Pointer);
 begin
- glColor3f(Color, Color, Color);
- glVertex2i(X, Y);
+  glColor3f(Color, Color, Color);
+  glVertex2i(X, Y);
 end;
 
 procedure DrawFractal_GL(Iteration: TComplexIterationFunction;
   const CMin, CMax: Complex; XMin, XMax, YMin, YMax: Integer);
 begin
- glBegin(GL_POINTS);
- DrawFractal(Iteration, CMin, CMax, XMin, XMax, YMin, YMax,
-   @GL_PixelDraw, nil);
- glEnd;
+  glBegin(GL_POINTS);
+  DrawFractal(Iteration, CMin, CMax, XMin, XMax, YMin, YMax, @GL_PixelDraw, nil);
+  glEnd;
 end;
 
 { DrawFractal_Image --------------------------------------------------- }
 
 procedure Image_PixelDraw(X, Y: Integer; const Color: Single; Data: Pointer);
-var p: PVector3Byte;
+var
+  p: PVector3Byte;
 begin
- p := PVector3Byte(TImage(Data).PixelPtr(X, Y));
- p^[0] := Clamped(Round(Color*High(Byte)), Low(Byte), High(Byte));
- p^[1] := p^[0];
- p^[2] := p^[0];
+  p := PVector3Byte(TImage(Data).PixelPtr(X, Y));
+  p^[0] := Clamped(Round(Color*High(Byte)), Low(Byte), High(Byte));
+  p^[1] := p^[0];
+  p^[2] := p^[0];
 end;
 
 procedure DrawFractal_Image(Iteration: TComplexIterationFunction;
   const CMin, CMax: Complex; Image: TImage);
 begin
- DrawFractal(Iteration, CMin, CMax, 0, Image.Width-1, 0, Image.Height-1,
-   @Image_PixelDraw, Image);
+  DrawFractal(Iteration, CMin, CMax, 0, Image.Width-1, 0, Image.Height-1,
+    @Image_PixelDraw, Image);
 end;
 
 { DrawFractal_ImageAndGL --------------------------------------------------- }
 
 procedure ImageAndGL_PixelDraw(X, Y: Integer; const Color: Single; Data: Pointer);
 begin
- Image_PixelDraw(X, Y, Color, Data);
- GL_PixelDraw(X, Y, Color, Data);
+  Image_PixelDraw(X, Y, Color, Data);
+  GL_PixelDraw(X, Y, Color, Data);
 end;
 
 procedure DrawFractal_ImageAndGL(Iteration: TComplexIterationFunction;
   const CMin, CMax: Complex; Image: TImage);
 begin
- glBegin(GL_POINTS);
- DrawFractal(Iteration, CMin, CMax, 0, Image.Width-1, 0, Image.Height-1,
-   @ImageAndGL_PixelDraw, Image);
- glEnd;
+  glBegin(GL_POINTS);
+  DrawFractal(Iteration, CMin, CMax, 0, Image.Width-1, 0, Image.Height-1,
+    @ImageAndGL_PixelDraw, Image);
+  glEnd;
 end;
 
 end.
