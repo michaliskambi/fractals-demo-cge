@@ -16,10 +16,10 @@
 }
 
 
-uses SysUtils, KambiUtils, GL, GLU, GLExt, GLWindow, GLWinInputs,
+uses SysUtils, CastleUtils, GL, GLU, GLExt, CastleWindow, CastleInputs,
   UComplex, Math,
-  GLWinMessages, Images, FractalsUnit, KambiComplexUtils, KambiGLUtils,
-  KambiStringUtils, GLImages;
+  CastleMessages, Images, FractalsUnit, KambiComplexUtils, CastleGLUtils,
+  CastleStringUtils, GLImages;
 
 var
   { Can be modified only from Draw() (and when finalizing). }
@@ -33,8 +33,8 @@ var
   ZoomFactor: Float = 2.0;
 
   Iteration: TComplexIterationFunction = @MandelbrotIteration;
-  
-  Window: TGLWindowDemo;
+
+  Window: TCastleWindow;
 
 var
   { read/write only from PostRedrawFractal and Draw }
@@ -48,7 +48,7 @@ begin
  Window.PostRedisplay;
 end;
 
-procedure Draw(Window: TGLWindow);
+procedure Draw(Window: TCastleWindowBase);
 begin
  glRasterPos2i(0, 0);
 
@@ -71,18 +71,18 @@ begin
  end;
 end;
 
-procedure Resize(Window: TGLWindow);
+procedure Resize(Window: TCastleWindowBase);
 begin
  Resize2D(Window);
  PostRedrawFractal;
 end;
 
-procedure CloseGL(Window: TGLWindow);
+procedure CloseGL(Window: TCastleWindowBase);
 begin
  glFreeDisplayList(dlFractalImage);
 end;
 
-procedure MouseDown(Window: TGLWindow; btn: TMouseButton);
+procedure MouseDown(Window: TCastleWindowBase; btn: TMouseButton);
 var Middle, NewSize: Complex;
 begin
  if btn in [mbLeft, mbMiddle, mbRight] then
@@ -116,7 +116,7 @@ end;
 
 { menu ------------------------------------------------------------ }
 
-procedure MenuCommand(Window: TGLWindow; MenuItem: TMenuItem);
+procedure MenuCommand(Window: TCastleWindowBase; MenuItem: TMenuItem);
 
   procedure SetColorExponent(AValue: Cardinal);
   begin
@@ -202,7 +202,7 @@ end;
 { main ------------------------------------------------------------ }
 
 begin
- Window := TGLWindowDemo.Create(Application);
+ Window := TCastleWindow.Create(Application);
  try
   Window.ParseParameters;
 

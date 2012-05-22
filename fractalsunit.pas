@@ -72,7 +72,7 @@ procedure DrawFractal_ImageAndGL(Iteration: TComplexIterationFunction;
 
 implementation
 
-uses VectorMath, GL, Math, KambiUtils, KambiComplexUtils;
+uses VectorMath, GL, Math, CastleUtils, KambiComplexUtils;
 
 { Iterations ------------------------------------------------------------ }
 
