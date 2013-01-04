@@ -42,13 +42,13 @@
 
 uses SysUtils, CastleUtils, GL, GLU, GLExt, CastleWindow, CastleInputs,
   UComplex, Math, UIControls, CastleOpenDocument,
-  CastleMessages, Images, FractalsUnit, CastleGLUtils,
-  CastleStringUtils, GLImages;
+  CastleMessages, CastleImages, FractalsUnit, CastleGLUtils,
+  CastleStringUtils, GLImages, CastleKeysMouse;
 
 var
   { Can be modified only from Draw() (and when finalizing). }
   FractalImage: TRGBImage;
-  dlFractalImage: TGLuint = 0;
+  GLFractalImage: TGLImage;
 
   { After changing, remember to call PostRedrawFractal }
   FractalCMin: Complex = (Re:-3.0; Im: -2.0);
@@ -64,7 +64,7 @@ var
   { Read/write only from PostRedrawFractal and Draw }
   RedrawFractalPosted: boolean = true;
 
-{ Force update of FractalImage and dlFractalImage in nearest
+{ Force update of FractalImage and GLFractalImage in nearest
   Window.EventDraw and does Window.PostRedisplay. }
 procedure PostRedrawFractal;
 begin
@@ -79,19 +79,19 @@ begin
   if RedrawFractalPosted then
   begin
     FreeAndNil(FractalImage);
-    glFreeDisplayList(dlFractalImage);
+    FreeAndNil(GLFractalImage);
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    { now regenerate FractalImage and dlFractalImage }
+    { now regenerate FractalImage and GLFractalImage }
     FractalImage := TRGBImage.Create(Window.Width, Window.Height);
     DrawFractal_ImageAndGL(Iteration, FractalCMin, FractalCMax, FractalImage);
-    dlFractalImage := ImageDrawToDisplayList(FractalImage);
+    GLFractalImage := TGLImage.Create(FractalImage);
 
     RedrawFractalPosted := false;
   end else
   begin
-    glCallList(dlFractalImage);
+    GLFractalImage.Draw;
   end;
 end;
 
@@ -101,16 +101,16 @@ begin
   PostRedrawFractal;
 end;
 
-procedure CloseGL(Window: TCastleWindowBase);
+procedure Close(Window: TCastleWindowBase);
 begin
-  glFreeDisplayList(dlFractalImage);
+  FreeAndNil(GLFractalImage);
 end;
 
-procedure MouseDown(Window: TCastleWindowBase; btn: TMouseButton);
+procedure Press(Window: TCastleWindowBase; const Event: TInputPressRelease);
 var
   Middle, NewSize: Complex;
 begin
-  if btn in [mbLeft, mbMiddle, mbRight] then
+  if Event.EventType = itMouseButton { any mouse button click } then
   begin
     Middle := MakeComplex(
       MapRange(Window.MouseX, 0, Window.Width,
@@ -120,20 +120,13 @@ begin
 
     NewSize := FractalCMax - FractalCMin;
 
-    case btn of
+    case Event.MouseButton of
       mbLeft: NewSize /= ZoomFactor;
       mbRight: NewSize *= ZoomFactor;
     end;
 
-    {
     FractalCMin := Middle - NewSize/2;
     FractalCMax := Middle + NewSize/2;
-    }
-    { to avoid FPC 1.0.10 problems }
-    FractalCMin.Re := Middle.Re - NewSize.Re/2;
-    FractalCMin.Im := Middle.Im - NewSize.Im/2;
-    FractalCMax.Re := Middle.Re + NewSize.Re/2;
-    FractalCMax.Im := Middle.Im + NewSize.Im/2;
 
     PostRedrawFractal;
   end;
@@ -249,8 +242,8 @@ begin
     Window.OnResize := @Resize;
     Window.OnDrawStyle := ds2D;
     Window.OnDraw := @Draw;
-    Window.OnClose := @CloseGL;
-    Window.OnMouseDown := @MouseDown;
+    Window.OnClose := @Close;
+    Window.OnPress := @Press;
     Window.OpenAndRun;
   finally FreeAndNil(FractalImage) end;
 end.

@@ -25,7 +25,7 @@ unit FractalsUnit;
 
 interface
 
-uses UComplex, Images;
+uses UComplex, CastleImages;
 
 const
   MinColorExponent = 1;
@@ -223,7 +223,7 @@ procedure Image_PixelDraw(X, Y: Integer; const Color: Single; Data: Pointer);
 var
   p: PVector3Byte;
 begin
-  p := PVector3Byte(TImage(Data).PixelPtr(X, Y));
+  p := PVector3Byte(TCastleImage(Data).PixelPtr(X, Y));
   p^[0] := Clamped(Round(Color*High(Byte)), Low(Byte), High(Byte));
   p^[1] := p^[0];
   p^[2] := p^[0];
