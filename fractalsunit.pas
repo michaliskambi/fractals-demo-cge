@@ -110,7 +110,7 @@ function CSqrAbs(const C: Complex): Real;
 
 implementation
 
-uses VectorMath, GL, Math, CastleUtils;
+uses CastleVectors, GL, Math, CastleUtils;
 
 { Iterations ------------------------------------------------------------ }
 

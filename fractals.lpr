@@ -41,9 +41,9 @@
 }
 
 uses SysUtils, CastleUtils, GL, GLU, GLExt, CastleWindow, CastleInputs,
-  UComplex, Math, UIControls, CastleOpenDocument,
+  UComplex, Math, CastleUIControls, CastleOpenDocument,
   CastleMessages, CastleImages, FractalsUnit, CastleGLUtils,
-  CastleStringUtils, GLImages, CastleKeysMouse;
+  CastleStringUtils, CastleGLImages, CastleKeysMouse;
 
 var
   { Can be modified only from Draw() (and when finalizing). }
