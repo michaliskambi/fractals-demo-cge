@@ -58,7 +58,7 @@ var
 
   Iteration: TComplexIterationFunction = @MandelbrotIteration;
 
-  Window: TCastleWindow;
+  Window: TCastleWindowCustom;
 
 var
   { Read/write only from PostRedrawFractal and Draw }
@@ -134,7 +134,7 @@ end;
 
 { menu ------------------------------------------------------------ }
 
-procedure MenuCommand(Window: TCastleWindowBase; MenuItem: TMenuItem);
+procedure MenuClick(Window: TCastleWindowBase; MenuItem: TMenuItem);
 
   procedure SetColorExponent(AValue: Cardinal);
   begin
@@ -230,13 +230,15 @@ end;
 { main ------------------------------------------------------------ }
 
 begin
-  Window := TCastleWindow.Create(Application);
+  Window := TCastleWindowCustom.Create(Application);
 
   try
     Window.ParseParameters;
 
     Window.MainMenu := GetMainMenu;
-    Window.OnMenuCommand := @MenuCommand;
+    { TODO: Replace to OnMenuClick for Castle Game Engine > 4.0.1,
+      OnMenuCommand is deprecated. }
+    Window.OnMenuCommand := @MenuClick;
 
     Window.DoubleBuffer := false;
     Window.OnResize := @Resize;
