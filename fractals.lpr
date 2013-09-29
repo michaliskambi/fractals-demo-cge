@@ -41,7 +41,7 @@
 }
 
 uses SysUtils, CastleUtils, GL, GLU, GLExt, CastleWindow, CastleInputs,
-  UComplex, Math, CastleUIControls, CastleOpenDocument,
+  UComplex, Math, CastleUIControls, CastleOpenDocument, CastleColors,
   CastleMessages, CastleImages, FractalsUnit, CastleGLUtils,
   CastleStringUtils, CastleGLImages, CastleKeysMouse;
 
@@ -81,7 +81,7 @@ begin
     FreeAndNil(FractalImage);
     FreeAndNil(GLFractalImage);
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear([cbColor], Black);
 
     { now regenerate FractalImage and GLFractalImage }
     FractalImage := TRGBImage.Create(Window.Width, Window.Height);
@@ -134,7 +134,7 @@ end;
 
 { menu ------------------------------------------------------------ }
 
-procedure MenuClick(Window: TCastleWindowBase; MenuItem: TMenuItem);
+procedure MenuClick(Sender: TCastleWindowBase; MenuItem: TMenuItem);
 
   procedure SetColorExponent(AValue: Cardinal);
   begin
@@ -163,13 +163,12 @@ begin
     90:  PostRedrawFractal;
     100: begin
           Card := ColorExponent;
-          if MessageInputQueryCardinal(Window, 'New color exponent:', Card,
-            taLeft) then
+          if MessageInputQueryCardinal(Window, 'New color exponent:', Card) then
            SetColorExponent(Card);
          end;
     110: SetColorExponent(ColorExponent * 2);
     120: SetColorExponent(ColorExponent div 2);
-    130: MessageInputQuery(Window, 'Input zoom factor:', ZoomFactor, taLeft);
+    130: MessageInputQuery(Window, 'Input zoom factor:', ZoomFactor);
     140: ZoomFactor *= 2;
     150: ZoomFactor /= 2;
     160: SetIteration(@MandelbrotIteration);
@@ -178,7 +177,7 @@ begin
     180: begin
           Card := ZIntPower;
           if MessageInputQueryCardinal(Window, 'Input Z exponent for "Z int power" iteration:',
-            Card, taLeft) then
+            Card) then
           begin
            ZIntPower := Card;
            if Iteration = @ZIntPowerIteration then
@@ -236,9 +235,7 @@ begin
     Window.ParseParameters;
 
     Window.MainMenu := GetMainMenu;
-    { TODO: Replace to OnMenuClick for Castle Game Engine > 4.0.1,
-      OnMenuCommand is deprecated. }
-    Window.OnMenuCommand := @MenuClick;
+    Window.OnMenuClick := @MenuClick;
 
     Window.DoubleBuffer := false;
     Window.OnResize := @Resize;
