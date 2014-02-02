@@ -40,7 +40,7 @@
     better names for "z int power"
 }
 
-uses SysUtils, CastleUtils, GL, GLU, GLExt, CastleWindow, CastleInputs,
+uses SysUtils, CastleUtils, CastleWindow, CastleInputs,
   UComplex, Math, CastleUIControls, CastleOpenDocument, CastleColors,
   CastleMessages, CastleImages, FractalsUnit, CastleGLUtils,
   CastleStringUtils, CastleGLImages, CastleKeysMouse;
@@ -58,7 +58,7 @@ var
 
   Iteration: TComplexIterationFunction = @MandelbrotIteration;
 
-  Window: TCastleWindowCustom;
+  Window: TCastleWindow;
 
 var
   { Read/write only from PostRedrawFractal and Draw }
@@ -69,44 +69,40 @@ var
 procedure PostRedrawFractal;
 begin
   RedrawFractalPosted := true;
-  Window.PostRedisplay;
+  Window.Invalidate;
 end;
 
-procedure Draw(Window: TCastleWindowBase);
+procedure Render(Container: TUIContainer);
 begin
-  glRasterPos2i(0, 0);
-
   if RedrawFractalPosted then
   begin
     FreeAndNil(FractalImage);
     FreeAndNil(GLFractalImage);
 
-    glClear([cbColor], Black);
+    GLClear([cbColor], Black);
 
     { now regenerate FractalImage and GLFractalImage }
     FractalImage := TRGBImage.Create(Window.Width, Window.Height);
-    DrawFractal_ImageAndGL(Iteration, FractalCMin, FractalCMax, FractalImage);
+    DrawFractal_Image(Iteration, FractalCMin, FractalCMax, FractalImage);
     GLFractalImage := TGLImage.Create(FractalImage);
 
     RedrawFractalPosted := false;
-  end else
-  begin
-    GLFractalImage.Draw;
   end;
+
+  GLFractalImage.Draw;
 end;
 
-procedure Resize(Window: TCastleWindowBase);
+procedure Resize(Container: TUIContainer);
 begin
-  Resize2D(Window);
   PostRedrawFractal;
 end;
 
-procedure Close(Window: TCastleWindowBase);
+procedure Close(Container: TUIContainer);
 begin
   FreeAndNil(GLFractalImage);
 end;
 
-procedure Press(Window: TCastleWindowBase; const Event: TInputPressRelease);
+procedure Press(Container: TUIContainer; const Event: TInputPressRelease);
 var
   Middle, NewSize: Complex;
 begin
@@ -191,7 +187,7 @@ begin
     else raise EInternalError.Create('not impl menu item');
   end;
 
-  Window.PostRedisplay;
+  Window.Invalidate;
 end;
 
 function GetMainMenu: TMenu;
@@ -229,7 +225,7 @@ end;
 { main ------------------------------------------------------------ }
 
 begin
-  Window := TCastleWindowCustom.Create(Application);
+  Window := TCastleWindow.Create(Application);
 
   try
     Window.ParseParameters;
@@ -239,8 +235,7 @@ begin
 
     Window.DoubleBuffer := false;
     Window.OnResize := @Resize;
-    Window.OnDrawStyle := ds2D;
-    Window.OnDraw := @Draw;
+    Window.OnRender := @Render;
     Window.OnClose := @Close;
     Window.OnPress := @Press;
     Window.OpenAndRun;

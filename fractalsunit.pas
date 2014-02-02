@@ -68,39 +68,9 @@ procedure DrawFractal(Iteration: TComplexIterationFunction;
   const CMin, CMax: Complex; XMin, XMax, YMin, YMax: Integer;
   OnPixelDraw: TPixelDrawFunction; OnPixelDrawData: Pointer);
 
-{ DrawFractal with OpenGL.
-
-  Points are drawn using
-
-@longCode(#
-  glColor3f(Color, Color, Color)
-  glVertex2i(x, y)
-#)
-
-  So e.g. you can translate them using modelview matrix
-  but when using scale you must be careful (because if you scale them
-  too large, you will see holes between adjacent points).
-  Whole call is enclosed in glBegin(GL_POINTS) ... glEnd. }
-procedure DrawFractal_GL(Iteration: TComplexIterationFunction;
-  const CMin, CMax: Complex;
-  XMin, XMax, YMin, YMax: Integer);
-
 { DrawFractal on TImage. For now, Image class must be TRGBImage.
   Every pixel on image is drawn. }
 procedure DrawFractal_Image(Iteration: TComplexIterationFunction;
-  const CMin, CMax: Complex; Image: TImage);
-
-{ DrawFractal simultaneously in OpenGL and Image.
-  So this is like
-
-@longCode(#
-  DrawFractal_Image(CMin, CMax, Image);
-  DrawFractal_GL(CMin, CMax, 0, Image.Width-1, 0, Image.Height-1)
-#)
-
-  but both draws are done simultaneously (i.e. only ONE call
-  to base DrawFractal function is made). }
-procedure DrawFractal_ImageAndGL(Iteration: TComplexIterationFunction;
   const CMin, CMax: Complex; Image: TImage);
 
 function MakeComplex(ARe, AIm: Real): Complex;
@@ -110,7 +80,7 @@ function CSqrAbs(const C: Complex): Real;
 
 implementation
 
-uses CastleVectors, GL, Math, CastleUtils;
+uses CastleVectors, Math, CastleUtils;
 
 { Iterations ------------------------------------------------------------ }
 
@@ -201,24 +171,6 @@ begin
     end;
 end;
 
-{ DrawFractal_GL --------------------------------------------------- }
-
-procedure GL_PixelDraw(X, Y: Integer; const Color: Single; Data: Pointer);
-begin
-  glColor3f(Color, Color, Color);
-  glVertex2i(X, Y);
-end;
-
-procedure DrawFractal_GL(Iteration: TComplexIterationFunction;
-  const CMin, CMax: Complex; XMin, XMax, YMin, YMax: Integer);
-begin
-  glBegin(GL_POINTS);
-  DrawFractal(Iteration, CMin, CMax, XMin, XMax, YMin, YMax, @GL_PixelDraw, nil);
-  glEnd;
-end;
-
-{ DrawFractal_Image --------------------------------------------------- }
-
 procedure Image_PixelDraw(X, Y: Integer; const Color: Single; Data: Pointer);
 var
   p: PVector3Byte;
@@ -234,23 +186,6 @@ procedure DrawFractal_Image(Iteration: TComplexIterationFunction;
 begin
   DrawFractal(Iteration, CMin, CMax, 0, Image.Width-1, 0, Image.Height-1,
     @Image_PixelDraw, Image);
-end;
-
-{ DrawFractal_ImageAndGL --------------------------------------------------- }
-
-procedure ImageAndGL_PixelDraw(X, Y: Integer; const Color: Single; Data: Pointer);
-begin
-  Image_PixelDraw(X, Y, Color, Data);
-  GL_PixelDraw(X, Y, Color, Data);
-end;
-
-procedure DrawFractal_ImageAndGL(Iteration: TComplexIterationFunction;
-  const CMin, CMax: Complex; Image: TImage);
-begin
-  glBegin(GL_POINTS);
-  DrawFractal(Iteration, CMin, CMax, 0, Image.Width-1, 0, Image.Height-1,
-    @ImageAndGL_PixelDraw, Image);
-  glEnd;
 end;
 
 function MakeComplex(ARe, AIm: Real): Complex;
