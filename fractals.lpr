@@ -109,9 +109,9 @@ begin
   if Event.EventType = itMouseButton { any mouse button click } then
   begin
     Middle := MakeComplex(
-      MapRange(Window.MouseX, 0, Window.Width,
+      MapRange(Event.Position[0], 0, Window.Width,
         FractalCMin.Re, FractalCMax.Re),
-      MapRange(Window.Height - Window.MouseY, 0, Window.Height,
+      MapRange(Event.Position[1], 0, Window.Height,
         FractalCMin.Im, FractalCMax.Im));
 
     NewSize := FractalCMax - FractalCMin;
