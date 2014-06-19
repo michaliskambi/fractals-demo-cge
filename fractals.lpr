@@ -58,7 +58,7 @@ var
 
   Iteration: TComplexIterationFunction = @MandelbrotIteration;
 
-  Window: TCastleWindow;
+  Window: TCastleWindowCustom;
 
 var
   { Read/write only from PostRedrawFractal and Draw }
@@ -225,7 +225,10 @@ end;
 { main ------------------------------------------------------------ }
 
 begin
-  Window := TCastleWindow.Create(Application);
+  { Use TCastleWindowCustom, not TCastleWindow, as TCastleWindow has
+    scene manager with camera that by default captures mouse left clicks
+    for Examine navigation. }
+  Window := TCastleWindowCustom.Create(Application);
 
   try
     Window.ParseParameters;
