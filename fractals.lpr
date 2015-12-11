@@ -84,7 +84,7 @@ begin
     { now regenerate FractalImage and GLFractalImage }
     FractalImage := TRGBImage.Create(Window.Width, Window.Height);
     DrawFractal_Image(Iteration, FractalCMin, FractalCMax, FractalImage);
-    GLFractalImage := TGLImage.Create(FractalImage);
+    GLFractalImage := TGLImage.Create(FractalImage, false);
 
     RedrawFractalPosted := false;
   end;

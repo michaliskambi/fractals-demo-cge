@@ -68,10 +68,10 @@ procedure DrawFractal(Iteration: TComplexIterationFunction;
   const CMin, CMax: Complex; XMin, XMax, YMin, YMax: Integer;
   OnPixelDraw: TPixelDrawFunction; OnPixelDrawData: Pointer);
 
-{ DrawFractal on TImage. For now, Image class must be TRGBImage.
+{ DrawFractal on TCastleImage. For now, Image class must be TRGBImage.
   Every pixel on image is drawn. }
 procedure DrawFractal_Image(Iteration: TComplexIterationFunction;
-  const CMin, CMax: Complex; Image: TImage);
+  const CMin, CMax: Complex; Image: TCastleImage);
 
 function MakeComplex(ARe, AIm: Real): Complex;
 
@@ -182,7 +182,7 @@ begin
 end;
 
 procedure DrawFractal_Image(Iteration: TComplexIterationFunction;
-  const CMin, CMax: Complex; Image: TImage);
+  const CMin, CMax: Complex; Image: TCastleImage);
 begin
   DrawFractal(Iteration, CMin, CMax, 0, Image.Width-1, 0, Image.Height-1,
     @Image_PixelDraw, Image);
